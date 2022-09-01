@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class Vertice {
 	
-	// Lista de arestas, incluind as arestas reversar que
-	// não esto no grafo original definido (para o fluxo de retirada)
+	// Vértice contendo listas de arestas, e
+	// seus respectivos vértices de ligamento
 	ArrayList<Aresta> arestas = new ArrayList<>();
 	
 }

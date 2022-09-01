@@ -8,88 +8,103 @@ public class EdmondKarp {
 		
 		//Variaveis
 		Scanner scan = new Scanner(System.in);
+		System.out.println("Digite a quantidade de vértices do grafo: ");
 		int vertices = scan.nextInt();
+//		System.out.print("Digite a quantidade de arestas do grafo: ");
 		int arestas = scan.nextInt();
-		int fonte = 0;
-		int fim = vertices - 1;
+//		System.out.print("\n");
+		
+		int primeiroVertice = 0;
+		int ultimoVertice = vertices - 1;
 
 		//Grafo como vetor de vertices
 		Vertice[] grafo = new Vertice[vertices];
 
-		// Inicializar cada vertice
+		// Inicializar cada vertice isolado
 		for (int i = 0; i < vertices; i++)
 			grafo[i] = new Vertice();
 
-		// Initializar cada aresta
-		for (int i = 0; i < arestas; i++) {
+		// Inicializar cada aresta com suas informações
+		for (int i = 1; i <= arestas; i++) {
 			
-			//Scanear variaveis
-			int u = scan.nextInt();
-			int v = scan.nextInt();
-			int c = scan.nextInt();
+			//Scanear variaveis da aresta
+//			System.out.print("Digite o vertice de partida da aresta " + i + ": ");
+			int u = scan.nextInt(); u--;
+//			System.out.print("Digite o vertice de chegada da aresta " + i + ": ");
+			int v = scan.nextInt(); v--;
+//			System.out.print("Digite a capacidade da aresta " + i + ": ");
+			int c = scan.nextInt(); 
+//			System.out.print("\n");
 
-			// NOTE QUE ARESTA B, NÃO EST INICIALMENTE NO GRAFO, MAS AJUDAM A RESOLVER O PROBLEMA
+			// Note que a aresta b não está inicialmente no grafo, mas ajudará na execução
 			// Aresta de ida do fluxo
 			Aresta a = new Aresta(u , v , 0 , c);
 			// Aresta de volta (retirada de fluxo)
 			Aresta b = new Aresta(v , u , 0 , 0);
 			
-			// Definir que a aresta de volta de "a" é "b" e vice-versa 
-			a.setReverso(b);
-			b.setReverso(a);
-			
-			// Adicionar arestas no grafo
+			// Adicionar arestas no grafo ligada aos vértices corretos
 			grafo[u].arestas.add(a);
 			grafo[v].arestas.add(b);
 		}
 		
-		//Inicializar fluxo maximo
+		//Inicializar fluxo maximo como 0
 		int fluxoMaximo = 0;
 		
 		while (true) {
 
-			// Array pai usado para armazenar o caminho
-			// (caminhoAtual[i] armazena a aresta usada para chegar no vertice i)
+			// Vetor que armazena as arestas utilizadas para chegar até o vértice final
 			Aresta[] caminhoAtual = new Aresta[vertices];
-			ArrayList<Vertice> q = new ArrayList<>();
-			q.add(grafo[fonte]);
 			
-			// BFS encontrando o menor fluxo de aumento
+			// Lista de vértices que forem sendo acessados pelo fluxo
+			ArrayList<Vertice> q = new ArrayList<>();
+			q.add(grafo[primeiroVertice]);
+			
+			// Busca em largura até achar um caminho qualquer que leve até o fim
 			while (!q.isEmpty()) {
-				Vertice curr = q.remove(0);
+				
+				// Desenfileirar a o elemento pois foi visitado
+				Vertice verticeAtual = q.remove(0);
 				
 				// Verifica se a aresta ainda não foi visitada e caso não,
-				// aponta para a fonte, e é possível enviar o fluxo através dela
-				for (Aresta e : curr.arestas)
-					if (caminhoAtual[e.v] == null && e.v != fonte && e.capacidade > e.fluxo) {
+				// aponta para o próximo vértice, e é possível enviar o fluxo através dele
+				for (Aresta e : verticeAtual.arestas) {
+					if (caminhoAtual[e.v] == null && e.v != primeiroVertice && e.capacidade > e.fluxo) {
+						
+						// Adicionar no caminho atual as arestas, até que o vértice final seja encontrado
 						caminhoAtual[e.v] = e;
+						
+						// Acessar próximo vértice (em largura)
 						q.add(grafo[e.v]);
 					}
-			}
+				}
 				
-			// Se fim não foi alcançado, nenhum caminho de aumento será encontrado
+			}
+			
+			// Se o fim não foi alcançado, nenhum caminho de aumento será encontrado
 			// O algoritmo termina e printa o fluxo máximo
-			if (caminhoAtual[fim] == null)
+			if (caminhoAtual[ultimoVertice] == null) 
 				break;
 			
-			// Se o fim foi alcançado, nós vamos aumentar o fluxo ao longo do caminho
+			// Se o fim foi alcançado, nós vamos aumentar o fluxo ao longo do caminho até 
+			// sua capacidade máxima
 			int fluxoCorrente = Integer.MAX_VALUE;
 			
 			// Encontra o fluxo máximo que pode ser transportado para um determinado caminho 
-			// encontrando o fluxo residual mínimo de cada aresta no caminho
-			for (Aresta e = caminhoAtual[fim]; e != null; e = caminhoAtual[e.u])
+			// encontrando o gargalo mínimo desse caminho
+			for (Aresta e = caminhoAtual[ultimoVertice]; e != null; e = caminhoAtual[e.u])
 				fluxoCorrente = Math.min(fluxoCorrente , e.capacidade - e.fluxo);
 			
 			// Adiciona valores de fluxo e subtrai valores de fluxo reverso no caminho
-			for (Aresta e = caminhoAtual[fim]; e != null; e = caminhoAtual[e.u]) {
+			for (Aresta e = caminhoAtual[ultimoVertice]; e != null; e = caminhoAtual[e.u]) {
 				e.fluxo += fluxoCorrente;
-				e.reverse.fluxo -= fluxoCorrente;
 			}
+			
 			
 			fluxoMaximo += fluxoCorrente;
 		}
-
+		
 		// Saida do algoritmo
+		System.out.println("------------------");
 		System.out.println("Fluxo máximo: " + fluxoMaximo);
 		scan.close();
 	}
